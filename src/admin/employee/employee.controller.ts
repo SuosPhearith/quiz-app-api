@@ -18,7 +18,7 @@ import { AuthorizationGuard } from 'src/auth/guards/authorization/authorization.
 import { UpdateEmployeeDTO } from './dto/update-employee.dto';
 import { CreateEmployeeDTO } from './dto/create-employee.dto';
 
-@Controller('api/employee')
+@Controller('api/account')
 export class EmployeeController {
   constructor(private readonly employeeService: EmployeeService) {}
 

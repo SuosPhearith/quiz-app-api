@@ -20,12 +20,6 @@ export class UpdateEmployeeDTO {
   @IsEmail()
   readonly email: string;
 
-  @IsNotEmpty()
-  @IsString()
-  @MinLength(8)
-  @MaxLength(50)
-  readonly password: string;
-
   @IsOptional()
   @IsString()
   readonly avatar?: string;

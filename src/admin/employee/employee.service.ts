@@ -138,8 +138,6 @@ export class EmployeeService {
     updateEmployeeDTO: UpdateEmployeeDTO,
   ): Promise<ResponseCreateOrUpdateDTO> {
     try {
-      //hash password
-      const hashedPassword = await bcrypt.hash(updateEmployeeDTO.password, 10);
       // find user by id
       const user = await this.findOne(id);
       // start update
@@ -147,7 +145,7 @@ export class EmployeeService {
         where: {
           id: user.id,
         },
-        data: { ...updateEmployeeDTO, password: hashedPassword },
+        data: updateEmployeeDTO,
       });
       delete updateUser.password;
       //response back

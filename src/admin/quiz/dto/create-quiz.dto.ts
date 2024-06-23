@@ -7,7 +7,7 @@ import {
   IsEnum,
   IsInt,
 } from 'class-validator';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import { Type as QuestionType } from '@prisma/client';
 
 class CreateOptionDto {
@@ -30,6 +30,9 @@ class CreateQuestionDto {
   @IsEnum(QuestionType)
   type: QuestionType;
 
+  // @IsInt()
+  // score: number;
+  @Transform(({ value }) => parseInt(value, 10), { toClassOnly: true })
   @IsInt()
   score: number;
 
