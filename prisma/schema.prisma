@@ -1,0 +1,128 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Gender {
+  male
+  female
+}
+
+model Role {
+  id   Int    @id @default(autoincrement())
+  name String
+  User User[]
+}
+
+model User {
+  id          Int           @id @default(autoincrement())
+  name        String
+  email       String        @unique
+  password    String
+  role        Role          @relation(fields: [roleId], references: [id])
+  roleId      Int
+  status      Boolean       @default(true)
+  avatar      String?
+  gender      Gender
+  session     Int           @default(1)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  Log         Log[]
+  UserSession UserSession[]
+  Quiz        Quiz[]
+  Assign      Assign[]
+  Result      Result[]
+}
+
+model Log {
+  id        Int      @id @default(autoincrement())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  device    String
+  browser   String
+  createdAt DateTime @default(now())
+}
+
+model UserSession {
+  id           Int      @id @default(autoincrement())
+  userId       Int
+  sessionToken String   @unique @default(uuid())
+  device       String
+  browser      String
+  createdAt    DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Quiz {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+  status      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  createdBy   Int?
+  User        User?    @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+
+  questions Question[]
+  Assign    Assign[]
+  Result    Result[]
+}
+
+model Question {
+  id     Int      @id @default(autoincrement())
+  name   String
+  type   Type
+  score  Int
+  option Option[]
+  answer Answer[]
+  quizId Int
+  Quiz   Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+}
+
+model Option {
+  id         Int      @id @default(autoincrement())
+  letter     String
+  name       String
+  questionId Int
+  Question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+}
+
+model Answer {
+  id         Int      @id @default(autoincrement())
+  letter     String
+  questionId Int
+  Question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+}
+
+enum Type {
+  SINGLE
+  MULTIPLE
+}
+
+model Assign {
+  id       Int     @id @default(autoincrement()) // Add an id field if not already present
+  assigner String
+  quiz     Quiz    @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  quizId   Int
+  user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId   Int
+  status   Boolean @default(true)
+
+  @@unique([quizId, userId])
+}
+
+model Result {
+  id         Int      @id @default(autoincrement())
+  quizId     Int
+  userId     Int
+  questionId Int
+  userAnswer String[]
+  score      Int
+
+  quiz Quiz @relation(fields: [quizId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+}

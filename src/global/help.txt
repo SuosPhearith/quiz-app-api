@@ -1,0 +1,139 @@
+//::================================>>Core library<<================================::
+//::================================================================================::
+
+//::================================>>Third party<<=================================::
+//::================================================================================::
+
+//::===============================>>Custom library<<===============================::
+//::================================================================================::
+
+
+//
+
+
+{
+    "name" : "Midterm exam",
+    "description" : "For every students in I4-GIC",
+    "questions": [
+        {
+            "name" : "What is NextJS?",
+            "type" : "SINGLE",
+            "score" : 3,
+            "options" : [
+                {
+                    "letter" : "A",
+                    "name" : "Framework of Vuejs"
+                },
+                {
+                    "letter" : "B",
+                    "name" : "Framework of Reactjs"
+                },
+                {
+                    "letter" : "C",
+                    "name" : "Framework of Laravel"
+                }
+            ],
+            "answer" : [
+                {
+                    "letter" : "B"
+                }
+            ]
+        },
+        {
+            "name" : "What is NuxtJs?",
+            "type" : "SINGLE",
+            "score" : 3,
+            "options" : [
+                {
+                    "letter" : "A",
+                    "name" : "Framework of Vuejs"
+                },
+                {
+                    "letter" : "B",
+                    "name" : "Framework of Reactjs"
+                },
+                {
+                    "letter" : "C",
+                    "name" : "Framework of Laravel"
+                }
+            ],
+            "answer" : [
+                {
+                    "letter" : "A"
+                }
+            ]
+        },
+        {
+            "name" : "Which are framework of ReactJs?",
+            "type" : "MULTIPLE",
+            "score" : 3,
+            "options" : [
+                {
+                    "letter" : "A",
+                    "name" : "NuxtJs"
+                },
+                {
+                    "letter" : "B",
+                    "name" : "NextJs"
+                },
+                {
+                    "letter" : "C",
+                    "name" : "Remix"
+                }
+            ],
+            "answer" : [
+                {
+                    "letter" : "B"
+                },
+                {
+                    "letter" : "C"
+                }
+            ]
+        }
+    ]
+}
+
+
+{
+    "users" : [
+        {
+            "id" : 2
+        },
+        {
+            "id" : 3
+        }
+    ]
+}
+
+
+{
+    "answers" : [
+        {
+            "questionId" : 1,
+            "option" : [
+                {
+                    "letter" : "B"
+                }
+            ]
+        },
+        {
+            "questionId" : 2,
+            "option" : [
+                {
+                    "letter" : "A"
+                }
+            ]
+        },
+        {
+            "questionId" : 3,
+            "option" : [
+                {
+                    "letter" : "B"
+                },
+                {
+                    "letter" : "C"
+                }
+            ]
+        }
+    ]
+}
