@@ -30,8 +30,6 @@ class CreateQuestionDto {
   @IsEnum(QuestionType)
   type: QuestionType;
 
-  // @IsInt()
-  // score: number;
   @Transform(({ value }) => parseInt(value, 10), { toClassOnly: true })
   @IsInt()
   score: number;
@@ -54,6 +52,12 @@ export class CreateQuizDto {
   @IsString()
   @IsOptional()
   description?: string;
+
+  @IsOptional()
+  passScore?: string;
+
+  @IsOptional()
+  totalScore?: string;
 
   @IsArray()
   @ValidateNested({ each: true })

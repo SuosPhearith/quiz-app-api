@@ -62,6 +62,8 @@ model Quiz {
   id          Int      @id @default(autoincrement())
   name        String
   description String?
+  passScore   Int?
+  totalScore  Int?
   status      Boolean  @default(true)
   createdAt   DateTime @default(now())
   createdBy   Int?
@@ -119,9 +121,9 @@ model Result {
   id         Int      @id @default(autoincrement())
   quizId     Int
   userId     Int
-  questionId Int
   userAnswer String[]
   score      Int
+  isPass     Boolean
 
   quiz Quiz @relation(fields: [quizId], references: [id])
   user User @relation(fields: [userId], references: [id])

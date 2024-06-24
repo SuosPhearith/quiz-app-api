@@ -208,4 +208,51 @@ export class EmployeeService {
       throw error;
     }
   }
+
+  async findEvery(quizId: number) {
+    try {
+      const users = await this.prisma.user.findMany({
+        where: {
+          id: {
+            notIn: (
+              await this.prisma.assign.findMany({
+                where: {
+                  quizId: +quizId,
+                },
+                select: {
+                  userId: true,
+                },
+              })
+            ).map((assign) => assign.userId),
+          },
+        },
+        select: {
+          id: true,
+        },
+      });
+
+      return {
+        users,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async findSelected(id: number) {
+    try {
+      const selectedUser = await this.prisma.assign.findMany({
+        where: { quizId: +id },
+        include: {
+          user: true,
+        },
+      });
+      const data = selectedUser.map((su) => ({
+        id: su.user.id,
+      }));
+      return data;
+    } catch (error) {
+      throw error;
+    }
+  }
 }

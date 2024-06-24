@@ -93,18 +93,28 @@ export class UserService {
           userAnswer: answer.option,
           score: questionScore,
         });
-
-        // Step 7: Save result to database
-        await this.prisma.result.create({
-          data: {
-            quizId: quiz.id,
-            userId: user.id,
-            questionId: question.id,
-            userAnswer: answer.option.map((opt) => opt.letter), // Save only the letters of options
-            score: questionScore,
-          },
-        });
       }
+      // Step 7: Save result to database
+      const transformedData = dodata?.map((item) => {
+        const userAnswers = item.userAnswer
+          .map((answer) => answer.letter.toLowerCase())
+          .join('');
+        return `questionId:${item.questionId},userAnswer:[${userAnswers}]`;
+      });
+      const getPassScore = await this.prisma.quiz.findUnique({
+        where: { id },
+        select: { passScore: true },
+      });
+      const mark: boolean = totalScore >= getPassScore.passScore;
+      await this.prisma.result.create({
+        data: {
+          quizId: quiz.id,
+          userId: user.id,
+          userAnswer: transformedData, // Save only the letters of options
+          score: totalScore,
+          isPass: mark,
+        },
+      });
       // step 8: Update assign status to false
       await this.prisma.assign.update({
         where: {

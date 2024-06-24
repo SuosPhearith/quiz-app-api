@@ -12,7 +12,8 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class QuizService {
   constructor(private readonly prisma: PrismaService) {}
   async create(createQuizDto: CreateQuizDto, user: User) {
-    const { name, description, questions } = createQuizDto;
+    const { name, description, questions, passScore, totalScore } =
+      createQuizDto;
 
     return this.prisma.$transaction(async (prisma) => {
       // Create the quiz
@@ -21,6 +22,8 @@ export class QuizService {
           name,
           description,
           createdBy: user.id,
+          passScore: +passScore,
+          totalScore: +totalScore,
         },
       });
 
@@ -116,6 +119,14 @@ export class QuizService {
           id,
           createdBy: user.id,
         },
+        include: {
+          questions: {
+            include: {
+              answer: true,
+              option: true,
+            },
+          },
+        },
       });
       if (!quiz) {
         throw new NotFoundException();
@@ -158,9 +169,10 @@ export class QuizService {
 
   async assign(id: number, assigner: User, users: any) {
     try {
+      await this.prisma.assign.deleteMany({ where: { quizId: id } });
       return this.prisma.$transaction(async (prisma) => {
         for (const user of users.users) {
-          const isAssigned = await this.prisma.assign.findUnique({
+          const isAssigned = await prisma.assign.findUnique({
             where: {
               quizId_userId: {
                 quizId: id,
@@ -193,6 +205,85 @@ export class QuizService {
       });
     } catch (error) {
       //check if duplicate
+      throw error;
+    }
+  }
+
+  async findResult(
+    user: User,
+    page: number = 1,
+    pageSize: number = 10,
+    key: string = '',
+    id: number,
+  ) {
+    try {
+      // Calculate the offset for pagination
+      const skip = (page - 1) * pageSize;
+
+      // Build the search criteria conditionally
+      const where: any = {
+        quizId: id,
+      };
+
+      if (key) {
+        where.OR = [{ name: { contains: key, mode: 'insensitive' } }];
+      }
+
+      // Get the total count of data matching the criteria
+      const totalCount = await this.prisma.result.count({ where });
+
+      // Calculate total pages
+      const totalPages = Math.ceil(totalCount / pageSize);
+
+      // Get the data with pagination and search criteria
+      const data = await this.prisma.result.findMany({
+        where,
+        include: {
+          quiz: true,
+          user: {
+            select: {
+              name: true,
+            },
+          },
+        },
+        skip,
+        take: +pageSize,
+        orderBy: {
+          quizId: 'desc',
+        },
+      });
+
+      // Return the response with pagination details
+      return {
+        data,
+        totalCount: +totalCount,
+        totalPages: +totalPages,
+        currentPage: +page,
+        pageSize: +pageSize,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async getDashboard() {
+    try {
+      const totalAdmins = await this.prisma.user.count({
+        where: { roleId: 1 },
+      });
+      const totalUsers = await this.prisma.user.count({
+        where: { roleId: 2 },
+      });
+      const totalQuizzes = await this.prisma.quiz.count();
+      const totalResults = await this.prisma.result.count();
+
+      return {
+        totalAdmins,
+        totalUsers,
+        totalQuizzes,
+        totalResults,
+      };
+    } catch (error) {
       throw error;
     }
   }

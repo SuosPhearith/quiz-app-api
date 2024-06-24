@@ -39,6 +39,19 @@ export class EmployeeController {
   ) {
     return this.employeeService.findAll(page, pageSize, key);
   }
+  @Get('get/every/:id')
+  @Roles(Role.admin)
+  @UseGuards(AuthenticationGuard, AuthorizationGuard)
+  findEvery(@Param('id') id: number) {
+    return this.employeeService.findEvery(id);
+  }
+
+  @Get('get/selected/users/:id')
+  @Roles(Role.admin)
+  @UseGuards(AuthenticationGuard, AuthorizationGuard)
+  findSelected(@Param('id') id: number) {
+    return this.employeeService.findSelected(id);
+  }
 
   @Get(':id')
   @Roles(Role.admin)

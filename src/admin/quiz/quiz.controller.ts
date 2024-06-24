@@ -41,11 +41,31 @@ export class QuizController {
     return this.quizService.findAll(user, page, pageSize, key);
   }
 
+  @Get(':id/get-result')
+  @Roles(Role.admin)
+  @UseGuards(AuthenticationGuard, AuthorizationGuard)
+  findResult(
+    @Query('page') page: number = 1,
+    @Query('pageSize') pageSize: number = 10,
+    @Query('key') key: string = '',
+    @Req() { user },
+    @Param('id') id: string,
+  ) {
+    return this.quizService.findResult(user, page, pageSize, key, +id);
+  }
+
   @Get(':id')
   @Roles(Role.admin)
   @UseGuards(AuthenticationGuard, AuthorizationGuard)
   findOne(@Param('id') id: string, @Req() { user }) {
     return this.quizService.findOne(+id, user);
+  }
+
+  @Get('get/get-dashboard/data')
+  @Roles(Role.admin)
+  @UseGuards(AuthenticationGuard, AuthorizationGuard)
+  getDashboard() {
+    return this.quizService.getDashboard();
   }
 
   @Patch(':id')
