@@ -23,7 +23,7 @@ model User {
   name        String
   email       String        @unique
   password    String
-  role        Role          @relation(fields: [roleId], references: [id])
+  role        Role          @relation(fields: [roleId], references: [id], onDelete: Cascade)
   roleId      Int
   status      Boolean       @default(true)
   avatar      String?
@@ -40,7 +40,7 @@ model User {
 
 model Log {
   id        Int      @id @default(autoincrement())
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    Int
   device    String
   browser   String
@@ -55,7 +55,7 @@ model UserSession {
   browser      String
   createdAt    DateTime @default(now())
 
-  user User @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Quiz {
@@ -125,6 +125,6 @@ model Result {
   score      Int
   isPass     Boolean
 
-  quiz Quiz @relation(fields: [quizId], references: [id])
-  user User @relation(fields: [userId], references: [id])
+  quiz Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

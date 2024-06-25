@@ -29,6 +29,13 @@ export class EmployeeController {
     return this.employeeService.create(createEmployeeDTO);
   }
 
+  @Post('create-admin')
+  @Roles(Role.admin)
+  @UseGuards(AuthenticationGuard, AuthorizationGuard)
+  createAdmin(@Body() createEmployeeDTO: CreateEmployeeDTO) {
+    return this.employeeService.createAdmin(createEmployeeDTO);
+  }
+
   @Get()
   @Roles(Role.admin)
   @UseGuards(AuthenticationGuard, AuthorizationGuard)
@@ -38,6 +45,17 @@ export class EmployeeController {
     @Query('key') key: string = '',
   ) {
     return this.employeeService.findAll(page, pageSize, key);
+  }
+
+  @Get('get/add-admin')
+  @Roles(Role.admin)
+  @UseGuards(AuthenticationGuard, AuthorizationGuard)
+  findAllAdmin(
+    @Query('page') page: number = 1,
+    @Query('pageSize') pageSize: number = 10,
+    @Query('key') key: string = '',
+  ) {
+    return this.employeeService.findAllAdmin(page, pageSize, key);
   }
   @Get('get/every/:id')
   @Roles(Role.admin)
@@ -68,6 +86,20 @@ export class EmployeeController {
     @Body() updateEmployeeDTO: UpdateEmployeeDTO,
   ) {
     return this.employeeService.update(+id, updateEmployeeDTO);
+  }
+
+  @Patch(':id/reset-password')
+  @Roles(Role.admin)
+  @UseGuards(AuthenticationGuard, AuthorizationGuard)
+  resetPassword(@Param('id') id: number) {
+    return this.employeeService.resetPassword(+id);
+  }
+
+  @Delete(':id/delete-user')
+  @Roles(Role.admin)
+  @UseGuards(AuthenticationGuard, AuthorizationGuard)
+  deleteUser(@Param('id') id: number) {
+    return this.employeeService.deleteUser(+id);
   }
 
   @Patch(':id/toggle-active')

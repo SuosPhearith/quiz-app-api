@@ -147,12 +147,16 @@ export class UserService {
       const skip = (page - 1) * pageSize;
 
       // Build the search criteria conditionally
+      // Build the search criteria conditionally
       const where: any = {
         userId: user.id,
+        quiz: {
+          status: true,
+        },
       };
 
       if (key) {
-        where.OR = [{ assigner: { contains: key, mode: 'insensitive' } }];
+        where.OR = [{ quiz: { name: { contains: key, mode: 'insensitive' } } }];
       }
 
       // Get the total count of data matching the criteria

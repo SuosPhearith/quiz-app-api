@@ -54,6 +54,18 @@ export class QuizController {
     return this.quizService.findResult(user, page, pageSize, key, +id);
   }
 
+  @Get(':id/get-result-each-user')
+  @Roles(Role.user)
+  @UseGuards(AuthenticationGuard, AuthorizationGuard)
+  findResultEachUser(
+    @Query('page') page: number = 1,
+    @Query('pageSize') pageSize: number = 10,
+    @Req() { user },
+    @Param('id') id: string,
+  ) {
+    return this.quizService.findResultEachUser(user, page, pageSize, +id);
+  }
+
   @Get(':id')
   @Roles(Role.admin)
   @UseGuards(AuthenticationGuard, AuthorizationGuard)

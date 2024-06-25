@@ -41,8 +41,42 @@ export class EmployeeService {
       return response;
     } catch (error) {
       //check if duplicate
-      if (error.code === 'P2002')
+      if (error.code === 'P2002') {
         throw new ConflictException('Email already exists');
+      }
+      throw error;
+    }
+  }
+
+  async createAdmin(
+    createEmployeeDTO: CreateEmployeeDTO,
+  ): Promise<ResponseCreateOrUpdateDTO> {
+    try {
+      //hash password
+      const hashedPassword = await bcrypt.hash(createEmployeeDTO.password, 10);
+      //apply hash password
+      const savedUser = {
+        ...createEmployeeDTO,
+        password: hashedPassword,
+        roleId: Role.admin,
+      };
+      const newUser = await this.prisma.user.create({
+        data: savedUser,
+      });
+      //remove field password
+      newUser.password = undefined;
+      //response back
+      const response: ResponseCreateOrUpdateDTO = {
+        data: newUser,
+        message: 'Created successfully',
+        statusCode: HttpStatus.CREATED,
+      };
+      return response;
+    } catch (error) {
+      //check if duplicate
+      if (error.code === 'P2002') {
+        throw new ConflictException('Email already exists');
+      }
       throw error;
     }
   }
@@ -104,11 +138,68 @@ export class EmployeeService {
     }
   }
 
+  async findAllAdmin(
+    page: number = 1,
+    pageSize: number = 10,
+    key: string = '',
+  ): Promise<any> {
+    try {
+      // Calculate the offset for pagination
+      const skip = (page - 1) * pageSize;
+
+      // Build the search criteria conditionally
+      const where: any = {
+        roleId: Role.admin,
+      };
+
+      if (key) {
+        where.OR = [
+          { name: { contains: key, mode: 'insensitive' } },
+          { email: { contains: key, mode: 'insensitive' } },
+        ];
+      }
+
+      // Get the total count of users matching the criteria
+      const totalCount = await this.prisma.user.count({ where });
+
+      // Calculate total pages
+      const totalPages = Math.ceil(totalCount / pageSize);
+
+      // Get the users with pagination and search criteria
+      const data = await this.prisma.user.findMany({
+        where,
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          status: true,
+          avatar: true,
+          gender: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+        skip,
+        take: +pageSize,
+      });
+
+      // Return the response with pagination details
+      return {
+        data,
+        totalCount: +totalCount,
+        totalPages: +totalPages,
+        currentPage: +page,
+        pageSize: +pageSize,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async findOne(id: number): Promise<any> {
     try {
       // find user by id
       const user = await this.prisma.user.findUnique({
-        where: { id, roleId: Role.user },
+        where: { id },
         select: {
           id: true,
           name: true,
@@ -138,8 +229,11 @@ export class EmployeeService {
     updateEmployeeDTO: UpdateEmployeeDTO,
   ): Promise<ResponseCreateOrUpdateDTO> {
     try {
-      // find user by id
-      const user = await this.findOne(id);
+      // check is valid id
+      const user = await this.prisma.user.findUnique({ where: { id } });
+      if (!user) throw new NotFoundException();
+      if (user.email === process.env.SUPER_ADMIN_EMAIL)
+        throw new BadRequestException('This is super admin');
       // start update
       const updateUser = await this.prisma.user.update({
         where: {
@@ -188,7 +282,10 @@ export class EmployeeService {
   async toggleActive(id: number, me: any): Promise<any> {
     try {
       // check is valid id
-      const user = await this.findOne(id);
+      const user = await this.prisma.user.findUnique({ where: { id } });
+      if (!user) throw new NotFoundException();
+      if (user.email === process.env.SUPER_ADMIN_EMAIL)
+        throw new BadRequestException('This is super admin');
       // validation
       if (me.id === id)
         throw new BadRequestException('Can not ban own account');
@@ -251,6 +348,45 @@ export class EmployeeService {
         id: su.user.id,
       }));
       return data;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async resetPassword(id: number) {
+    try {
+      //hash password
+      const hashedPassword = await bcrypt.hash('12345678', 10);
+      // check is valid id
+      const user = await this.prisma.user.findUnique({ where: { id } });
+      if (!user) throw new NotFoundException();
+      if (user.email === process.env.SUPER_ADMIN_EMAIL)
+        throw new BadRequestException('This is super admin');
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: { password: hashedPassword },
+      });
+      return {
+        message: 'Reset successfully',
+        statusCode: HttpStatus.OK,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async deleteUser(id: number) {
+    try {
+      // check is valid id
+      const user = await this.prisma.user.findUnique({ where: { id } });
+      if (!user) throw new NotFoundException();
+      if (user.email === process.env.SUPER_ADMIN_EMAIL)
+        throw new BadRequestException('This is super admin');
+      await this.prisma.user.delete({ where: { id: user.id } });
+      return {
+        message: 'Deleted successfully',
+        statusCode: HttpStatus.OK,
+      };
     } catch (error) {
       throw error;
     }

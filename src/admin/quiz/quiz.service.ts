@@ -266,6 +266,59 @@ export class QuizService {
     }
   }
 
+  async findResultEachUser(
+    user: User,
+    page: number = 1,
+    pageSize: number = 10,
+    id: number,
+  ) {
+    try {
+      // Calculate the offset for pagination
+      const skip = (page - 1) * pageSize;
+
+      // Build the search criteria conditionally
+      const where: any = {
+        quizId: id,
+        userId: user.id,
+      };
+
+      // Get the total count of data matching the criteria
+      const totalCount = await this.prisma.result.count({ where });
+
+      // Calculate total pages
+      const totalPages = Math.ceil(totalCount / pageSize);
+
+      // Get the data with pagination and search criteria
+      const data = await this.prisma.result.findMany({
+        where,
+        include: {
+          quiz: true,
+          user: {
+            select: {
+              name: true,
+            },
+          },
+        },
+        skip,
+        take: +pageSize,
+        orderBy: {
+          id: 'desc',
+        },
+      });
+
+      // Return the response with pagination details
+      return {
+        data,
+        totalCount: +totalCount,
+        totalPages: +totalPages,
+        currentPage: +page,
+        pageSize: +pageSize,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async getDashboard() {
     try {
       const totalAdmins = await this.prisma.user.count({
