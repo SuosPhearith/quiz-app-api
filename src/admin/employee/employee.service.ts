@@ -123,6 +123,9 @@ export class EmployeeService {
         },
         skip,
         take: +pageSize,
+        orderBy: {
+          id: 'desc',
+        },
       });
 
       // Return the response with pagination details
@@ -180,6 +183,9 @@ export class EmployeeService {
         },
         skip,
         take: +pageSize,
+        orderBy: {
+          id: 'desc',
+        },
       });
 
       // Return the response with pagination details

@@ -2,7 +2,6 @@ import {
   IsEmail,
   IsEnum,
   IsNotEmpty,
-  IsNumber,
   IsOptional,
   IsString,
   MaxLength,
@@ -26,10 +25,6 @@ export class CreateAuthDto {
   @MinLength(8)
   @MaxLength(50)
   readonly password: string;
-
-  @IsNotEmpty()
-  @IsNumber()
-  readonly roleId: number;
 
   @IsOptional()
   @IsString()

@@ -103,6 +103,12 @@ export class AuthController {
     return this.authService.changePassword(changePasswordDTO, user);
   }
 
+  @Delete('deleteAccount')
+  @UseGuards(AuthenticationGuard)
+  deleteAccount(@Req() { user }) {
+    return this.authService.deleteAccount(user);
+  }
+
   @Patch('updateProfile')
   @UseGuards(AuthenticationGuard)
   updateProfile(@Body() updateProfileDTO: UpdateProfileDTO, @Req() { user }) {

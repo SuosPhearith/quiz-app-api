@@ -18,6 +18,7 @@ import { ResponseDeleteDTO } from 'src/global/dto/response.delete.dto';
 import { ChangePasswordDTO } from './dto/change-password.dto';
 import { UpdateProfileDTO } from './dto/update-profile.dto';
 import { FileUploadService } from 'src/file/file-upload.service';
+import { Role } from 'src/global/enum/role.enum';
 
 @Injectable()
 export class AuthService {
@@ -34,7 +35,11 @@ export class AuthService {
       //hash password
       const hashedPassword = await bcrypt.hash(createAuthDto.password, 10);
       //apply hash password
-      const savedUser = { ...createAuthDto, password: hashedPassword };
+      const savedUser = {
+        ...createAuthDto,
+        password: hashedPassword,
+        roleId: Role.user,
+      };
       const newUser = await this.prisma.user.create({
         data: savedUser,
       });
@@ -214,6 +219,9 @@ export class AuthService {
         where,
         skip,
         take: +pageSize,
+        orderBy: {
+          id: 'desc',
+        },
       });
 
       // Return the response with pagination details
@@ -242,6 +250,12 @@ export class AuthService {
         where: { id: user.id },
         data: {
           session: user.session + 1,
+        },
+      });
+      // delete all session
+      await this.prisma.userSession.deleteMany({
+        where: {
+          userId: user.id,
         },
       });
       // response back
@@ -310,14 +324,14 @@ export class AuthService {
       const oldUser = await this.prisma.user.findUnique({
         where: { id: user.id },
       });
-      if (!oldUser) throw new UnauthorizedException();
+      if (!oldUser) throw new BadRequestException();
       // compare password
       const passwordMatch = await bcrypt.compare(
         changePassword.currentPassword,
         oldUser.password,
       );
       if (!passwordMatch)
-        throw new UnauthorizedException('Invalid current password');
+        throw new BadRequestException('Invalid current password');
       // hash password
       const hashedPassword = await bcrypt.hash(changePassword.newPassword, 10);
       // handle change password
@@ -392,6 +406,24 @@ export class AuthService {
       // response back
       return {
         message: 'Updated succesfully!',
+        statusCode: HttpStatus.OK,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async deleteAccount(user: User) {
+    try {
+      const deletedUser = await this.prisma.user.findUnique({
+        where: { id: user.id },
+      });
+      if (deletedUser.email === process.env.SUPER_ADMIN_EMAIL) {
+        throw new BadRequestException('Cannot delete super admin account');
+      }
+      await this.prisma.user.delete({ where: { id: deletedUser.id } });
+      return {
+        message: 'Deleted Successfully',
         statusCode: HttpStatus.OK,
       };
     } catch (error) {
