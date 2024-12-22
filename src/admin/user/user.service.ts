@@ -12,6 +12,42 @@ import { CreateQuizDto } from './dto/create-quiz.dto';
 export class UserService {
   constructor(private readonly prisma: PrismaService) {}
 
+  async canDo(id: number, user: User) {
+    try {
+      // Step 1: Validate if the quiz exists and is assigned to the user
+      const quiz = await this.prisma.quiz.findUnique({
+        where: { id },
+        include: { Assign: true },
+      });
+      if (!quiz) {
+        throw new NotFoundException(`Quiz with id ${id} not found`);
+      }
+      const assignment = quiz.Assign.find(
+        (assign) => assign.userId === user.id,
+      );
+
+      if (!assignment) {
+        throw new BadRequestException(
+          `Quiz is not assigned to user ${user.id}`,
+        );
+      }
+      // Step 2: get quiz limit and check
+      if (quiz.limit) {
+        // get currect user have submit quiz
+        const doNumber = await this.prisma.result.count({
+          where: { userId: user.id, quizId: quiz.id },
+        });
+        if (doNumber < quiz.limit) {
+          return true;
+        }
+        return false;
+      }
+      return true;
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async doQuiz(id: number, user: User, createQuizDto: CreateQuizDto) {
     try {
       // Step 1: Validate if the quiz exists and is assigned to the user
@@ -32,6 +68,16 @@ export class UserService {
         throw new BadRequestException(
           `Quiz is not assigned to user ${user.id}`,
         );
+      }
+      // check react limit
+      if (quiz.limit) {
+        // get currect user have submit quiz
+        const doNumber = await this.prisma.result.count({
+          where: { userId: user.id, quizId: quiz.id },
+        });
+        if (doNumber >= quiz.limit) {
+          throw new BadRequestException('You have reached to limit.');
+        }
       }
 
       // Step 2: Initialize total score and dodata array

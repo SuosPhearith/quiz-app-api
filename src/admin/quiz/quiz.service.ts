@@ -12,9 +12,8 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class QuizService {
   constructor(private readonly prisma: PrismaService) {}
   async create(createQuizDto: CreateQuizDto, user: User) {
-    const { name, description, questions, passScore, totalScore } =
+    const { name, description, questions, passScore, totalScore, limit } =
       createQuizDto;
-
     return this.prisma.$transaction(async (prisma) => {
       // Create the quiz
       const quiz = await prisma.quiz.create({
@@ -24,6 +23,7 @@ export class QuizService {
           createdBy: user.id,
           passScore: +passScore,
           totalScore: +totalScore,
+          limit: +limit,
         },
       });
 

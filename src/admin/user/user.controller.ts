@@ -22,6 +22,13 @@ import { CreateQuizDto } from './dto/create-quiz.dto';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
+  @Post(':id/can-do')
+  @Roles(Role.user)
+  @UseGuards(AuthenticationGuard, AuthorizationGuard)
+  canDo(@Param('id') id: string, @Req() { user }) {
+    return this.userService.canDo(+id, user);
+  }
+
   @Post(':id')
   @Roles(Role.user)
   @UseGuards(AuthenticationGuard, AuthorizationGuard)

@@ -59,6 +59,9 @@ export class CreateQuizDto {
   @IsOptional()
   totalScore?: string;
 
+  @IsOptional()
+  limit?: number;
+
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => CreateQuestionDto)

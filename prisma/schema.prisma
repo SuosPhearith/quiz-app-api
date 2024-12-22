@@ -68,6 +68,7 @@ model Quiz {
   createdAt   DateTime @default(now())
   createdBy   Int?
   User        User?    @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+  limit       Int?
 
   questions Question[]
   Assign    Assign[]
